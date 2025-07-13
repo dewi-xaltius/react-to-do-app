@@ -1,26 +1,65 @@
-import { useState } from 'react'
 import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import AppHeader from './components/AppHeader';
+import TaskForm from './components/TaskForm';
+import TaskList from './components/TaskList';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState([]);
+
+  const addTask = (name) => {
+    const newTask = { id: Date.now(), name, completed: false };
+    setTasks([...tasks, newTask]);
+  };
+
+  const toggleTaskCompleted = (id) => {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === id) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  };
+
+  const deleteTask = (id) => {
+    const remainingTasks = tasks.filter(task => task.id !== id);
+    setTasks(remainingTasks);
+  };
 
   return (
-    <>
-      
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+    <Router>
+      <div className="App">
+        <AppHeader />
+        <TaskForm onAddTask={addTask} />
+        <Routes>
+          <Route 
+            path="/pending" 
+            element={
+              <TaskList 
+                tasks={tasks.filter(task => !task.completed)} 
+                onComplete={toggleTaskCompleted}
+                onDelete={deleteTask}
+                listType="pending" 
+              />
+            } 
+          />
+          <Route 
+            path="/completed" 
+            element={
+              <TaskList 
+                tasks={tasks.filter(task => task.completed)} 
+                onComplete={toggleTaskCompleted}
+                onDelete={deleteTask}
+                listType="completed" 
+              />
+            } 
+          />
+        </Routes>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
